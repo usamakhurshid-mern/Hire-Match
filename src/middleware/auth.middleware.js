@@ -6,15 +6,25 @@ const PLAN_HEADER = 'x-rapidapi-subscription';
 
 export async function rapidApiAuth(req, res, next) {
   try {
-    const proxySecret = req.headers['x-rapidapi-proxy-secret'];
+    const proxySecret = (req.headers['x-rapidapi-proxy-secret'] || '').trim();
     const isRapidApiRequest = Boolean(proxySecret);
 
     if (config.requireRapidApiProxy && !isRapidApiRequest) {
       return sendError(res, 403, 'FORBIDDEN', 'Direct access not allowed. Use RapidAPI.');
     }
 
-    if (isRapidApiRequest && proxySecret !== config.rapidApiProxySecret) {
-      return sendError(res, 403, 'FORBIDDEN', 'Invalid proxy secret');
+    if (isRapidApiRequest) {
+      if (!config.rapidApiProxySecret) {
+        return sendError(
+          res,
+          500,
+          'CONFIG_ERROR',
+          'RAPIDAPI_PROXY_SECRET is not configured on the server',
+        );
+      }
+      if (proxySecret !== config.rapidApiProxySecret) {
+        return sendError(res, 403, 'FORBIDDEN', 'Invalid proxy secret');
+      }
     }
 
     const rapidApiUser = req.headers['x-rapidapi-user'] || 'anonymous';

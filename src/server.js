@@ -38,6 +38,8 @@ async function start() {
       logger.info(`HireMatch API listening on port ${config.port}`, {
         env: config.env,
         requireRapidApiProxy: config.requireRapidApiProxy,
+        rapidApiSecretConfigured: Boolean(config.rapidApiProxySecret),
+        rapidApiSecretLength: config.rapidApiProxySecret.length,
       });
     });
 
