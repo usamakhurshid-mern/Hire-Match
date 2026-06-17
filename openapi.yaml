@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: HireMatch
+  description: Explainable resume-to-job fit scoring API for ATS and HR products
+  version: 1.0.0
+  termsOfService: https://hirematchapi.com/terms
+servers:
+  - url: https://YOUR-DEPLOYED-URL.com
+    description: Production
+
+paths:
+  /v1/health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      version:
+                        type: string
+                      uptime:
+                        type: integer
+
+  /v1/match/score:
+    post:
+      summary: Score resume against job description
+      operationId: matchScore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - resumeText
+                - jobDescriptionText
+              properties:
+                resumeText:
+                  type: string
+                  minLength: 100
+                  maxLength: 50000
+                jobDescriptionText:
+                  type: string
+                  minLength: 100
+                  maxLength: 50000
+                options:
+                  type: object
+                  properties:
+                    language:
+                      type: string
+                      default: en
+                    includeExplanation:
+                      type: boolean
+                      default: true
+                    weights:
+                      type: object
+                      properties:
+                        skills:
+                          type: number
+                        experience:
+                          type: number
+                        education:
+                          type: number
+                        location:
+                          type: number
+            example:
+              resumeText: "Senior Software Engineer with 6 years of experience. Skills Node.js, Express, PostgreSQL, Redis, Docker, AWS. Bachelor's in Computer Science."
+              jobDescriptionText: "Hiring Senior Backend Engineer. Required Node.js, Express, PostgreSQL, 5+ years. Preferred Redis, Docker. Remote US."
+              options:
+                includeExplanation: true
+      responses:
+        '200':
+          description: Match score result
+        '400':
+          description: Validation error
+        '402':
+          description: Quota exceeded
+        '429':
+          description: Rate limited
+
+  /v1/usage:
+    get:
+      summary: Get current plan usage
+      operationId: getUsage
+      responses:
+        '200':
+          description: Usage statistics
